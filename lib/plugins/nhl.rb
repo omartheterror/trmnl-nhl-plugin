@@ -55,3 +55,11 @@ module Plugins
         teams = ([preferred] + extras).uniq
 
         # Schedule window (past/upcoming days)
+
+ 
+        # (Add any additional logic here if needed)
+      end  # closes def locals
+
+    end  # closes class Plugin
+  end    # closes module NHL
+end      # closes module Plugins
