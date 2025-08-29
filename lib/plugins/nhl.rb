@@ -25,7 +25,7 @@ module Plugins
 
         # Start with a conservative TTL; we will re-instantiate the client after we
         # detect live/game-day state to align API polling to your policy.
-        @client  = Plugins::NhlClient.new(ttl: numeric(@setting["refresh_seconds"], default: 60))
+        @client = Plugins::NhlClient.new(ttl: as_int(@setting["refresh_seconds"], 60))
       end
 
       # TRMNL calls this. Return a Hash ("locals") that the ERB views will render.
