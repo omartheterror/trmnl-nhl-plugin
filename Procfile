@@ -1,1 +1,1 @@
-web: bundle exec ruby serve.rb
+web: bundle exec ruby ./serve.rb
