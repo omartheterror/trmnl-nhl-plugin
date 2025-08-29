@@ -55,3 +55,4 @@ get "/screen" do
   plugin   = Plugins::NHL::Plugin.new(settings)
   data     = plugin.locals
   erb :"plugins/nhl/screen", locals: data, layout: false
+  end
