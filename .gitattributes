@@ -1,0 +1,17 @@
+# Normalize text files to LF in the repo
+* text=auto eol=lf
+
+# Explicitly pin key types to LF (Ruby & web files)
+*.rb   text eol=lf
+*.erb  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+Gemfile       text eol=lf
+Gemfile.lock  text eol=lf
+*.md   text eol=lf
+
+# Binary files (never modify line endings)
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff* binary

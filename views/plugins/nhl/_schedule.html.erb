@@ -1,0 +1,31 @@
+<section class="schedule">
+  <h2><%= locals[:preferred_team] %> — Schedule</h2>
+
+  <% if locals[:past_games].any? %>
+    <h3>Recent</h3>
+    <% locals[:past_games].each do |g| %>
+      <div class="row">
+        <span class="date"><%= Time.parse(g[:date]).strftime("%a %m/%d") %></span>
+        <span class="badge" style="background:<%= g[:away][:color] %>"><%= g[:away][:abbr] %></span>
+        <span class="score"><%= g[:away][:score] %></span>
+        <span class="sep">at</span>
+        <span class="badge" style="background:<%= g[:home][:color] %>"><%= g[:home][:abbr] %></span>
+        <span class="score"><%= g[:home][:score] %></span>
+        <span class="state"><%= g[:status] %></span>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if locals[:upcoming_games].any? %>
+    <h3>Upcoming</h3>
+    <% locals[:upcoming_games].each do |g| %>
+      <div class="row">
+        <span class="date"><%= Time.parse(g[:date]).strftime("%a %m/%d %-I:%M %p") %></span>
+        <span class="badge" style="background:<%= g[:away][:color] %>"><%= g[:away][:abbr] %></span>
+        <span class="sep">at</span>
+        <span class="badge" style="background:<%= g[:home][:color] %>"><%= g[:home][:abbr] %></span>
+        <span class="venue"><%= g[:venue] %></span>
+      </div>
+    <% end %>
+  <% end %>
+</section>

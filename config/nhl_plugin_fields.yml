@@ -1,0 +1,71 @@
+version: 1
+fields:
+  - name: preferred_team
+    label: Preferred team
+    type: select
+    required: true
+    default: "SJS"  # Default San Jose Sharks
+    options:
+      - { label: "ANA — Anaheim Ducks",  value: "ANA" }
+      - { label: "ARI — Arizona Coyotes", value: "ARI" }
+      - { label: "BOS — Boston Bruins",   value: "BOS" }
+      - { label: "BUF — Buffalo Sabres",  value: "BUF" }
+      - { label: "CGY — Calgary Flames",  value: "CGY" }
+      - { label: "CAR — Carolina Hurricanes", value: "CAR" }
+      - { label: "CHI — Chicago Blackhawks",  value: "CHI" }
+      - { label: "COL — Colorado Avalanche",  value: "COL" }
+      - { label: "CBJ — Columbus Blue Jackets", value: "CBJ" }
+      - { label: "DAL — Dallas Stars",    value: "DAL" }
+      - { label: "DET — Detroit Red Wings", value: "DET" }
+      - { label: "EDM — Edmonton Oilers", value: "EDM" }
+      - { label: "FLA — Florida Panthers", value: "FLA" }
+      - { label: "LAK — Los Angeles Kings", value: "LAK" }
+      - { label: "MIN — Minnesota Wild",  value: "MIN" }
+      - { label: "MTL — Montréal Canadiens", value: "MTL" }
+      - { label: "NSH — Nashville Predators", value: "NSH" }
+      - { label: "NJD — New Jersey Devils", value: "NJD" }
+      - { label: "NYI — New York Islanders", value: "NYI" }
+      - { label: "NYR — New York Rangers", value: "NYR" }
+      - { label: "OTT — Ottawa Senators",  value: "OTT" }
+      - { label: "PHI — Philadelphia Flyers", value: "PHI" }
+      - { label: "PIT — Pittsburgh Penguins", value: "PIT" }
+      - { label: "SEA — Seattle Kraken",   value: "SEA" }
+      - { label: "SJS — San Jose Sharks",  value: "SJS" }
+      - { label: "STL — St. Louis Blues",  value: "STL" }
+      - { label: "TBL — Tampa Bay Lightning", value: "TBL" }
+      - { label: "TOR — Toronto Maple Leafs", value: "TOR" }
+      - { label: "VAN — Vancouver Canucks", value: "VAN" }
+      - { label: "VGK — Vegas Golden Knights", value: "VGK" }
+      - { label: "WSH — Washington Capitals", value: "WSH" }
+      - { label: "WPG — Winnipeg Jets",    value: "WPG" }
+
+  - name: extra_teams
+    label: Track additional teams (optional)
+    type: multiselect
+    options_from: preferred_team.options
+
+  - name: lookback_days
+    label: Show past games (days)
+    type: number
+    default: 7
+    min: 0
+    max: 30
+
+  - name: lookahead_days
+    label: Show upcoming games (days)
+    type: number
+    default: 7
+    min: 0
+    max: 60
+
+  - name: show_division_standings
+    label: Show division standings for preferred team
+    type: toggle
+    default: true
+
+  - name: refresh_seconds
+    label: Auto-refresh (seconds) — baseline
+    type: number
+    default: 90
+    min: 30
+    max: 600

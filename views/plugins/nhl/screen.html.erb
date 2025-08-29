@@ -1,0 +1,37 @@
+<div class="nhl">
+  <style>
+    .badge { display:inline-flex; align-items:center; justify-content:center;
+             min-width:22px; height:22px; padding:0 6px; border-radius:999px;
+             font-weight:700; font-size:12px; color:#fff; letter-spacing:0.5px; }
+    .row { display:flex; gap:8px; align-items:center; margin:2px 0; }
+    .team { min-width:32px; }
+    .score { min-width:14px; font-weight:700; }
+    .sep { opacity:0.6; }
+    .state { margin-left:auto; opacity:0.7; }
+    .me { background: #f2f2f2; }
+    h2 { margin:6px 0 4px; }
+    h3 { margin:6px 0 4px; opacity:0.85; }
+    .meta { margin-top:6px; opacity:0.6; }
+    .table { display:flex; flex-direction:column; gap:2px; }
+    .thead, .tr { display:flex; gap:8px; }
+    .th, .td { font-variant-numeric: tabular-nums; min-width:32px; }
+    .th.team, .td.team { min-width:36px; }
+  </style>
+
+  <% if locals[:live_games].any? %>
+    <%= erb :'plugins/nhl/_live', locals: locals %>
+  <% end %>
+
+  <%= erb :'plugins/nhl/_schedule', locals: locals %>
+
+  <% if locals[:standings].any? %>
+    <%= erb :'plugins/nhl/_standings', locals: locals %>
+  <% end %>
+
+  <div class="meta">
+    <small>
+      Updated <%= locals[:updated_at].strftime("%-I:%M %p") %>
+      · Suggested refresh: <%= locals[:suggested_refresh_seconds] %>s
+    </small>
+  </div>
+</div>

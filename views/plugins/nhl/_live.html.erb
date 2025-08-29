@@ -1,0 +1,13 @@
+<section class="live">
+  <h2>LIVE</h2>
+  <% locals[:live_games].each do |g| %>
+    <div class="row">
+      <span class="badge" style="background:<%= g[:away][:color] %>"><%= g[:away][:abbr] %></span>
+      <span class="score"><%= g[:away][:score] %></span>
+      <span class="sep">at</span>
+      <span class="badge" style="background:<%= g[:home][:color] %>"><%= g[:home][:abbr] %></span>
+      <span class="score"><%= g[:home][:score] %></span>
+      <span class="state"><%= g[:status] %></span>
+    </div>
+  <% end %>
+</section>

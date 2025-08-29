@@ -1,0 +1,26 @@
+<section class="standings">
+  <h2>Division Standings</h2>
+  <div class="table">
+    <div class="thead">
+      <span class="th team">Team</span>
+      <span class="th">GP</span><span class="th">W</span><span class="th">L</span><span class="th">OT</span>
+      <span class="th">PTS</span><span class="th">RW</span><span class="th">ROW</span>
+      <span class="th">GF</span><span class="th">GA</span><span class="th">±</span>
+    </div>
+    <% locals[:standings].each do |t| %>
+      <div class="tr <%= 'me' if t[:teamAbbr] == locals[:preferred_team] %>">
+        <span class="badge" style="background:<%= t[:color] %>"><%= t[:teamAbbr] %></span>
+        <span class="td"><%= t[:GP] %></span>
+        <span class="td"><%= t[:W] %></span>
+        <span class="td"><%= t[:L] %></span>
+        <span class="td"><%= t[:OT] %></span>
+        <span class="td"><%= t[:PTS] %></span>
+        <span class="td"><%= t[:RW] %></span>
+        <span class="td"><%= t[:ROW] %></span>
+        <span class="td"><%= t[:GF] %></span>
+        <span class="td"><%= t[:GA] %></span>
+        <span class="td"><%= t[:DIFF] %></span>
+      </div>
+    <% end %>
+  </div>
+</section>
