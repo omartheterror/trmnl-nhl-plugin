@@ -21,11 +21,12 @@ module Plugins
     class Plugin
       def initialize(plugin_setting)
         # Raw settings provided by TRMNL (strings / arrays from the Custom Form Builder)
-        @setting = plugin_setting
+        @setting = plugin_setting || {}
 
         # Start with a conservative TTL; we will re-instantiate the client after we
         # detect live/game-day state to align API polling to your policy.
-        @client = Plugins::NhlClient.new(ttl: as_int(@setting["refresh_seconds"], 60))
+        ttl = as_int(@setting["refresh_seconds"], 60)
+        @client = Plugins::NhlClient.new(ttl: ttl)
       end
 
       # TRMNL calls this. Return a Hash ("locals") that the ERB views will render.
@@ -55,11 +56,34 @@ module Plugins
         teams = ([preferred] + extras).uniq
 
         # Schedule window (past/upcoming days)
-
- 
         # (Add any additional logic here if needed)
+
+        # If your views assume keys exist, return a minimal locals hash to avoid nil errors.
+        {
+          preferred_team: preferred,
+          extra_teams: extras,
+          teams: teams
+          # add more keys as your views require, e.g. :schedule, :standings, :live_games...
+        }
       end  # closes def locals
 
+      private
+
+      # Converts val to a positive Integer or returns default.
+      # Handles nil, empty strings, "0", negatives, and non-numeric input robustly.
+      def as_int(val, default)
+        case val
+        when Integer
+          val.positive? ? val : default
+        when String
+          s = val.strip
+          return default if s.empty?
+          n = Integer(s, exception: false)
+          n && n.positive? ? n : default
+        else
+          default
+        end
+      end
     end  # closes class Plugin
   end    # closes module NHL
 end      # closes module Plugins
