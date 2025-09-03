@@ -9,15 +9,11 @@ module Plugins
   module NHL
     class Plugin
       def initialize(plugin_setting)
-        # Raw settings from TRMNL (strings / arrays from the Custom Form Builder)
         @setting = plugin_setting || {}
-
-        # Conservative default TTL; can be tuned later
         ttl = as_int(@setting["refresh_seconds"], 60)
         @client = Plugins::NhlClient.new(ttl: ttl)
       end
 
-      # TRMNL calls this. Return a Hash ("locals") that the ERB views will render.
       def locals
         # ------------------------ INPUT NORMALIZATION ------------------------
         preferred = (@setting["preferred_team"] || "SJS").to_s.strip.upcase
@@ -37,71 +33,71 @@ module Plugins
         lookahead_days = as_int(@setting["lookahead_days"], 7)
         lookback_days  = as_int(@setting["lookback_days"], 0)
 
-        # Dates (NHL APIs expect YYYY-MM-DD)
+        # Dates
         today      = Date.today
         start_date = (today - lookback_days).strftime("%Y-%m-%d")
         end_date   = (today + lookahead_days).strftime("%Y-%m-%d")
         now_utc    = Time.now.utc
 
         # ------------------------ DATA FETCH ------------------------
-        # LIVE (only for selected teams)
         live = safe_call { @client.live_games_for_teams(teams) }
         live = Array(live)
 
-        # SCHEDULE window (only for selected teams), merged & deduped by :gamePk
+        # Schedule for selected teams
         team_schedules = teams.flat_map do |abbr|
           Array(safe_call { @client.schedule_for_team(team_abbr: abbr, start_date: start_date, end_date: end_date) })
         end
-
         schedule = dedupe_games(team_schedules)
 
-        # Partition into upcoming vs recent for convenience
+        # Partition into upcoming vs recent
         upcoming_games, recent_games = partition_games(schedule, now_utc)
 
-        # STANDINGS (division of preferred team), optional
+        # Limit to 2 games each
+        upcoming_games = upcoming_games.first(2)
+        recent_games   = recent_games.first(2)
+
+        # If no upcoming games in next 5 days, find next game within 30 days
+        next_game = nil
+        if upcoming_games.empty?
+          extended_end = (today + 30).strftime("%Y-%m-%d")
+          extended_schedule = safe_call {
+            @client.schedule_for_team(team_abbr: preferred, start_date: today.strftime("%Y-%m-%d"), end_date: extended_end)
+          }
+          extended_schedule = Array(extended_schedule).sort_by { |g| Time.parse(g[:date] || g["date"]) rescue Time.at(0) }
+          next_game = extended_schedule.first if extended_schedule.any?
+        end
+
+        # Standings (optional)
         standings = []
         if show_standings && preferred
           standings = Array(safe_call { @client.division_standings_for_team(preferred) })
         end
 
-        # ------------------------ LOCALS (nil-safe) ------------------------
-        h = {
-          # Settings
+        # ------------------------ LOCALS ------------------------
+        {
           preferred_team: preferred,
-          extra_teams:    extras,
-          teams:          teams,
+          extra_teams: extras,
+          teams: teams,
           show_standings: show_standings,
           lookahead_days: lookahead_days,
-          lookback_days:  lookback_days,
-          start_date:     start_date,
-          end_date:       end_date,
-
-          # Data
-          live:           live,
-          live_games:     live,          # alias some views use
-          schedule:       schedule,
-          games:          schedule,      # alias some views use
+          lookback_days: lookback_days,
+          start_date: start_date,
+          end_date: end_date,
+          now_utc: now_utc,
+          live: live,
+          live_games: live,
+          schedule: schedule,
+          games: schedule,
           upcoming_games: upcoming_games,
-          recent_games:   recent_games,
-          standings:      standings,
-
-          # Convenience
-          now_utc:        now_utc
+          recent_games: recent_games,
+          standings: standings,
+          next_game: next_game
         }
-
-        # Ensure arrays are never nil (defensive)
-        %i[live live_games schedule games upcoming_games recent_games standings extra_teams teams].each do |k|
-          h[k] = Array(h[k])
-        end
-
-        h
-      end  # def locals
+      end
 
       private
 
-      # ---- Helpers ---------------------------------------------------------
-
-      # Coerces to positive Integer or returns default.
+      # Converts val to positive Integer or returns default
       def as_int(val, default)
         case val
         when Integer
@@ -116,7 +112,7 @@ module Plugins
         end
       end
 
-      # Coerces "truthy" string/boolean-ish values.
+      # Converts truthy strings/booleans
       def as_bool(val, default = false)
         case val
         when TrueClass, FalseClass
@@ -131,16 +127,14 @@ module Plugins
         end
       end
 
-      # Rescue wrapper so a single failing call doesn't take down the view.
+      # Safe wrapper for API calls
       def safe_call
         yield
       rescue => e
-        # You could log e.message here if you add a logger
         []
       end
 
-      # Deduplicate games by :gamePk (when two selected teams play each other)
-      # Also sort by game date/time ascending.
+      # Deduplicate games by :gamePk and sort by date
       def dedupe_games(games)
         by_pk = {}
         Array(games).each do |g|
@@ -151,7 +145,7 @@ module Plugins
         by_pk.values.sort_by { |g| time_or_epoch(g[:date]) }
       end
 
-      # Partition into upcoming vs recent based on status/date
+      # Partition into upcoming vs recent
       def partition_games(games, now_utc)
         upcoming = []
         recent   = []
@@ -159,8 +153,6 @@ module Plugins
           sg = symbolize_keys(g)
           t  = time_or_epoch(sg[:date])
           if sg[:live]
-            # Treat live games as "upcoming" section if your template expects them there,
-            # but most UIs render LIVE separately; we keep them in schedule plus live[] above.
             upcoming << sg
           elsif final_status?(sg[:status]) || t < now_utc
             recent << sg
@@ -187,6 +179,6 @@ module Plugins
         return h unless h.is_a?(Hash)
         h.each_with_object({}) { |(k, v), acc| acc[k.to_sym] = v }
       end
-    end  # class Plugin
-  end    # module NHL
-end      # module Plugins
+    end
+  end
+end
