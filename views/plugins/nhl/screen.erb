@@ -10,7 +10,7 @@
   teams          = Array(defined?(teams) ? teams : ([preferred_team] + extra_teams).compact)
 
   show_standings = defined?(show_standings) ? show_standings : false
-  lookahead_days = defined?(lookahead_days) ? lookahead_days : 7
+  lookahead_days = defined?(lookahead_days) ? lookahead_days : 2
   lookback_days  = defined?(lookback_days)  ? lookback_days  : 0
 
   start_date     = defined?(start_date) ? start_date : nil
@@ -87,6 +87,7 @@
           start_date: start_date,
           end_date: end_date,
           now_utc: now_utc
+	    next_game: next_game
         } %>
   </div>
 
