@@ -1,37 +1,115 @@
+<%#
+  NHL — Screen
+  This template is defensive against nils and passes locals explicitly to partials.
+%>
+
+<%
+  # ---------- Nil-safe locals coalescing ----------
+  preferred_team = (defined?(preferred_team) ? preferred_team : nil) || "SJS"
+  extra_teams    = Array(defined?(extra_teams) ? extra_teams : nil)
+  teams          = Array(defined?(teams) ? teams : ([preferred_team] + extra_teams).compact)
+
+  show_standings = defined?(show_standings) ? show_standings : false
+  lookahead_days = defined?(lookahead_days) ? lookahead_days : 7
+  lookback_days  = defined?(lookback_days)  ? lookback_days  : 0
+
+  start_date     = defined?(start_date) ? start_date : nil
+  end_date       = defined?(end_date)   ? end_date   : nil
+  now_utc        = defined?(now_utc)    ? now_utc    : Time.now.utc
+
+  live           = Array(defined?(live) ? live : (defined?(live_games) ? live_games : nil))
+  # schedule/games aliases
+  schedule       = Array(defined?(schedule) ? schedule : (defined?(games) ? games : nil))
+  upcoming_games = Array(defined?(upcoming_games) ? upcoming_games : nil)
+  recent_games   = Array(defined?(recent_games)   ? recent_games   : nil)
+
+  # Small helpers for display
+  def fmt_date_range(a, b)
+    return "" unless a && b
+    begin
+      sa = Date.parse(a)
+      sb = Date.parse(b)
+      if sa.month == sb.month
+        "#{sa.strftime('%b %-d')}–#{sb.strftime('%-d')}"
+      else
+        "#{sa.strftime('%b %-d')} – #{sb.strftime('%b %-d')}"
+      end
+    rescue
+      "#{a} – #{b}"
+    end
+  end
+%>
+
+<style>
+  /* Minimal inline styles to keep things readable on e‑ink */
+  .nhl {
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    color: #111;
+  }
+  .nhl .header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; margin-bottom: 8px;
+  }
+  .nhl .title { font-weight: 700; font-size: 18px; letter-spacing: .2px; }
+  .nhl .subtitle { color: #666; font-size: 12px; }
+  .nhl .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .nhl .chip {
+    font-size: 11px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 10px;
+    background: #fafafa;
+  }
+  .section { margin: 12px 0; }
+  .section h3 { font-size: 14px; margin: 0 0 6px 0; color: #222; }
+  .empty { color: #777; font-size: 12px; padding: 8px 0; }
+</style>
+
 <div class="nhl">
-  <style>
-    .badge { display:inline-flex; align-items:center; justify-content:center;
-             min-width:22px; height:22px; padding:0 6px; border-radius:999px;
-             font-weight:700; font-size:12px; color:#fff; letter-spacing:0.5px; }
-    .row { display:flex; gap:8px; align-items:center; margin:2px 0; }
-    .team { min-width:32px; }
-    .score { min-width:14px; font-weight:700; }
-    .sep { opacity:0.6; }
-    .state { margin-left:auto; opacity:0.7; }
-    .me { background: #f2f2f2; }
-    h2 { margin:6px 0 4px; }
-    h3 { margin:6px 0 4px; opacity:0.85; }
-    .meta { margin-top:6px; opacity:0.6; }
-    .table { display:flex; flex-direction:column; gap:2px; }
-    .thead, .tr { display:flex; gap:8px; }
-    .th, .td { font-variant-numeric: tabular-nums; min-width:32px; }
-    .th.team, .td.team { min-width:36px; }
-  </style>
-
-  <% if locals[:live_games].any? %>
-    <%= erb :'plugins/nhl/_live', locals: locals %>
-  <% end %>
-
-  <%= erb :'plugins/nhl/_schedule', locals: locals %>
-
-  <% if locals[:standings].any? %>
-    <%= erb :'plugins/nhl/_standings', locals: locals %>
-  <% end %>
-
-  <div class="meta">
-    <small>
-      Updated <%= locals[:updated_at].strftime("%-I:%M %p") %>
-      · Suggested refresh: <%= locals[:suggested_refresh_seconds] %>s
-    </small>
+  <div class="header">
+    <div>
+      <div class="title">NHL Scores</div>
+      <div class="subtitle">
+        Window:
+        <%= fmt_date_range(start_date, end_date) %>
+        <% if lookback_days.to_i > 0 || lookahead_days.to_i != 7 %>
+          <span>(lookback <%= lookback_days %>, lookahead <%= lookahead_days %>)</span>
+        <% end %>
+      </div>
+      <div class="chips">
+        <span class="chip">Preferred: <strong><%= preferred_team %></strong></span>
+        <% if extra_teams.any? %>
+          <span class="chip">Also: <%= extra_teams.join(", ") %></span>
+        <% end %>
+      </div>
+    </div>
   </div>
+
+  <%# ---------------- LIVE (optional partial) ---------------- %>
+  <% if live.any? %>
+    <div class="section">
+      <h3>Live</h3>
+      <%= erb :_live, locals: { live: live, teams: teams } %>
+    </div>
+  <% end %>
+
+  <%# ---------------- SCHEDULE ---------------- %>
+  <div class="section">
+    <h3>Schedule</h3>
+    <%= erb :_schedule, locals: {
+          games: schedule,
+          upcoming_games: upcoming_games,
+          recent_games: recent_games,
+          teams: teams,
+          preferred_team: preferred_team,
+          start_date: start_date,
+          end_date: end_date,
+          now_utc: now_utc
+        } %>
+  </div>
+
+  <%# ---------------- STANDINGS (optional partial) ---------------- %>
+  <% if show_standings %>
+    <div class="section">
+      <h3>Standings</h3>
+      <%= erb :_standings, locals: { standings: standings, preferred_team: preferred_team } %>
+    </div>
+  <% end %>
 </div>
