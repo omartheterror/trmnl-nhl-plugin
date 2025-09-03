@@ -23,8 +23,8 @@
   upcoming_games = Array(defined?(upcoming_games) ? upcoming_games : nil)
   recent_games   = Array(defined?(recent_games)   ? recent_games   : nil)
 
-  # Small helpers for display
-  def fmt_date_range(a, b)
+  # Small helper for display (lambda instead of def to avoid Sinatra scope issues)
+  fmt_date_range = ->(a, b) do
     return "" unless a && b
     begin
       sa = Date.parse(a)
@@ -68,7 +68,7 @@
       <div class="title">NHL Scores</div>
       <div class="subtitle">
         Window:
-        <%= fmt_date_range(start_date, end_date) %>
+        <%= fmt_date_range.call(start_date, end_date) %>
         <% if lookback_days.to_i > 0 || lookahead_days.to_i != 7 %>
           <span>(lookback <%= lookback_days %>, lookahead <%= lookahead_days %>)</span>
         <% end %>
