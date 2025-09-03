@@ -29,9 +29,9 @@ module Plugins
 
         teams = ([preferred] + extras).uniq
 
-        show_standings = as_bool(@setting["show_standings"], false)
-        lookahead_days = as_int(@setting["lookahead_days"], 7)
-        lookback_days  = as_int(@setting["lookback_days"], 0)
+        show_standings = as_bool(@setting["show_standings"], true)
+        lookahead_days = as_int(@setting["lookahead_days"], 5)
+        lookback_days  = as_int(@setting["lookback_days"], 5)
 
         # Dates
         today      = Date.today
