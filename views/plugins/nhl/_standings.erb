@@ -1,26 +1,44 @@
-<section class="standings">
-  <h2>Division Standings</h2>
-  <div class="table">
-    <div class="thead">
-      <span class="th team">Team</span>
-      <span class="th">GP</span><span class="th">W</span><span class="th">L</span><span class="th">OT</span>
-      <span class="th">PTS</span><span class="th">RW</span><span class="th">ROW</span>
-      <span class="th">GF</span><span class="th">GA</span><span class="th">±</span>
-    </div>
-    <% locals[:standings].each do |t| %>
-      <div class="tr <%= 'me' if t[:teamAbbr] == locals[:preferred_team] %>">
-        <span class="badge" style="background:<%= t[:color] %>"><%= t[:teamAbbr] %></span>
-        <span class="td"><%= t[:GP] %></span>
-        <span class="td"><%= t[:W] %></span>
-        <span class="td"><%= t[:L] %></span>
-        <span class="td"><%= t[:OT] %></span>
-        <span class="td"><%= t[:PTS] %></span>
-        <span class="td"><%= t[:RW] %></span>
-        <span class="td"><%= t[:ROW] %></span>
-        <span class="td"><%= t[:GF] %></span>
-        <span class="td"><%= t[:GA] %></span>
-        <span class="td"><%= t[:DIFF] %></span>
-      </div>
-    <% end %>
-  </div>
-</section>
+<%#
+  NHL — Standings partial
+  Nil-safe: coalesces locals to Arrays.
+%>
+
+<%
+  standings       = Array(defined?(standings) ? standings : nil)
+  preferred_team  = defined?(preferred_team) ? preferred_team : nil
+%>
+
+<style>
+  .standings { border: 1px solid #eee; border-radius: 6px; padding: 8px; font-size: 12px; }
+  .standings table { width: 100%; border-collapse: collapse; }
+  .standings th, .standings td { padding: 4px; text-align: center; }
+  .standings th { background: #f8f8f8; font-weight: bold; }
+  .highlight { font-weight: bold; color: #0077cc; }
+</style>
+
+<div class="standings">
+  <% if standings.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Team</th><th>GP</th><th>W</th><th>L</th><th>OT</th><th>PTS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% standings.each do |row| %>
+          <% cls = (row[:teamAbbr].to_s.upcase == preferred_team.to_s.upcase) ? "highlight" : "" %>
+          <tr class="<%= cls %>">
+            <td><%= row[:teamAbbr] %></td>
+            <td><%= row[:GP] %></td>
+            <td><%= row[:W] %></td>
+            <td><%= row[:L] %></td>
+            <td><%= row[:OT] %></td>
+            <td><%= row[:PTS] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div>No standings available.</div>
+  <% end %>
+</div>

@@ -1,13 +1,40 @@
-<section class="live">
-  <h2>LIVE</h2>
-  <% locals[:live_games].each do |g| %>
-    <div class="row">
-      <span class="badge" style="background:<%= g[:away][:color] %>"><%= g[:away][:abbr] %></span>
-      <span class="score"><%= g[:away][:score] %></span>
-      <span class="sep">at</span>
-      <span class="badge" style="background:<%= g[:home][:color] %>"><%= g[:home][:abbr] %></span>
-      <span class="score"><%= g[:home][:score] %></span>
-      <span class="state"><%= g[:status] %></span>
-    </div>
+<%#
+  NHL — Live partial
+  Nil-safe: coalesces locals to Arrays.
+%>
+
+<%
+  live  = Array(defined?(live) ? live : nil)
+  teams = Array(defined?(teams) ? teams : nil)
+
+  def fmt_time_local(date_str)
+    t = Time.parse(date_str.to_s) rescue Time.at(0)
+    t.getlocal.strftime("%-I:%M %p")
+  end
+%>
+
+<style>
+  .live-block { border: 1px solid #eee; padding: 8px; border-radius: 6px; }
+  .live-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed #eee; }
+  .live-row:last-child { border-bottom: 0; }
+  .teams { display: flex; gap: 6px; }
+  .badge { font-size: 10px; color: #b30000; font-weight: bold; }
+</style>
+
+<div class="live-block">
+  <% if live.any? %>
+    <% live.each do |g| %>
+      <% sg = g.transform_keys(&:to_sym) rescue g %>
+      <div class="live-row">
+        <div class="teams">
+          <span><%= sg.dig(:away, :abbr) %> <%= sg.dig(:away, :score) %></span>
+          <span>@</span>
+          <span><%= sg.dig(:home, :abbr) %> <%= sg.dig(:home, :score) %></span>
+        </div>
+        <div class="badge">LIVE</div>
+      </div>
+    <% end %>
+  <% else %>
+    <div>No live games for <%= teams.join(", ") %></div>
   <% end %>
-</section>
+</div>

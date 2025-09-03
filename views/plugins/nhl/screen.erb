@@ -1,10 +1,10 @@
 <%#
   NHL — Screen
-  This template is defensive against nils and passes locals explicitly to partials.
+  Nil-safe and passes locals explicitly to partials.
 %>
 
 <%
-  # ---------- Nil-safe locals coalescing ----------
+  # ---------- Nil-safe locals ----------
   preferred_team = (defined?(preferred_team) ? preferred_team : nil) || "SJS"
   extra_teams    = Array(defined?(extra_teams) ? extra_teams : nil)
   teams          = Array(defined?(teams) ? teams : ([preferred_team] + extra_teams).compact)
@@ -18,12 +18,11 @@
   now_utc        = defined?(now_utc)    ? now_utc    : Time.now.utc
 
   live           = Array(defined?(live) ? live : (defined?(live_games) ? live_games : nil))
-  # schedule/games aliases
   schedule       = Array(defined?(schedule) ? schedule : (defined?(games) ? games : nil))
   upcoming_games = Array(defined?(upcoming_games) ? upcoming_games : nil)
   recent_games   = Array(defined?(recent_games)   ? recent_games   : nil)
 
-  # Small helper for display (lambda instead of def to avoid Sinatra scope issues)
+  # Inline lambda for date range
   fmt_date_range = ->(a, b) do
     return "" unless a && b
     begin
@@ -41,25 +40,14 @@
 %>
 
 <style>
-  /* Minimal inline styles to keep things readable on e‑ink */
-  .nhl {
-    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    color: #111;
-  }
-  .nhl .header {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; margin-bottom: 8px;
-  }
-  .nhl .title { font-weight: 700; font-size: 18px; letter-spacing: .2px; }
+  .nhl { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #111; }
+  .nhl .header { display: flex; align-items: baseline; justify-content: space-between; border-bottom: 1px solid #e5e5e5; padding-bottom: 6px; margin-bottom: 8px; }
+  .nhl .title { font-weight: 700; font-size: 18px; }
   .nhl .subtitle { color: #666; font-size: 12px; }
   .nhl .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-  .nhl .chip {
-    font-size: 11px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 10px;
-    background: #fafafa;
-  }
+  .nhl .chip { font-size: 11px; padding: 2px 6px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; }
   .section { margin: 12px 0; }
   .section h3 { font-size: 14px; margin: 0 0 6px 0; color: #222; }
-  .empty { color: #777; font-size: 12px; padding: 8px 0; }
 </style>
 
 <div class="nhl">
@@ -67,8 +55,7 @@
     <div>
       <div class="title">NHL Scores</div>
       <div class="subtitle">
-        Window:
-        <%= fmt_date_range.call(start_date, end_date) %>
+        Window: <%= fmt_date_range.call(start_date, end_date) %>
         <% if lookback_days.to_i > 0 || lookahead_days.to_i != 7 %>
           <span>(lookback <%= lookback_days %>, lookahead <%= lookahead_days %>)</span>
         <% end %>
@@ -82,18 +69,16 @@
     </div>
   </div>
 
-  <%# ---------------- LIVE (optional partial) ---------------- %>
   <% if live.any? %>
     <div class="section">
       <h3>Live</h3>
-      <%= erb :_live, locals: { live: live, teams: teams } %>
+      <%= erb :'plugins/nhl/_live', locals: { live: live, teams: teams } %>
     </div>
   <% end %>
 
-  <%# ---------------- SCHEDULE ---------------- %>
   <div class="section">
     <h3>Schedule</h3>
-    <%= erb :_schedule, locals: {
+    <%= erb :'plugins/nhl/_schedule', locals: {
           games: schedule,
           upcoming_games: upcoming_games,
           recent_games: recent_games,
@@ -105,11 +90,10 @@
         } %>
   </div>
 
-  <%# ---------------- STANDINGS (optional partial) ---------------- %>
   <% if show_standings %>
     <div class="section">
       <h3>Standings</h3>
-      <%= erb :_standings, locals: { standings: standings, preferred_team: preferred_team } %>
+      <%= erb :'plugins/nhl/_standings', locals: { standings: standings, preferred_team: preferred_team } %>
     </div>
   <% end %>
 </div>
